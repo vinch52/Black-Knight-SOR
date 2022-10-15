@@ -73,7 +73,6 @@
 '500 Knight Arm
 '605 Shield and left droptaget locked 
 '700 Award replay
-' test 
 
 
 
