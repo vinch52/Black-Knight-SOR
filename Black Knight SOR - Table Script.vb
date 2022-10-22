@@ -70,15 +70,27 @@
 '602 2 Locked Flashing
 '603 MULTI Flashing, Vertically Moving Dashes, Vertically Moving Dashes
 '604 Multiball Beacon
-'500 Knight Arm
+'600 Knight Arm
 '605 Shield and left droptaget locked 
 '700 Award replay
-'Test discord notification
-
 
 
 Option Explicit
 Randomize
+
+Const BallMass = 1.7    ' standard ball mass in JP's VPX Physics 3.0
+Const Ballsize = 50
+
+LoadCoreFiles
+Sub LoadCoreFiles
+    On Error Resume Next
+    ExecuteGlobal GetTextFile("core.vbs")
+    If Err Then MsgBox "Can't open core.vbs"
+    ExecuteGlobal GetTextFile("controller.vbs")
+    If Err Then MsgBox "Can't open controller.vbs"
+    On Error Goto 0
+End Sub
+
 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 ' X  X  X  X  X  X  X  X  X  X  X  X  X  X  X  X  X  X  X  X  X  X  X  
 '/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/
@@ -116,24 +128,24 @@ dim SongVolume:SongVolume = 1/(101-vovol)   ' 1 is full volume, but I set it qui
 'Const pBackglass=2
 
 '************************************************************************************************************************
-Const BallMass = 1.7    ' standard ball mass in JP's VPX Physics 3.0
+
 Const BallSaverTime = 15
-Const Ballsize = 50
+
 Const cGameName = "bksor"
 Const DifficultyRageCountMystery=1
-Const directory = "HKEY_CURRENT_USER\SOFTWARE\Visual Pinball\Controller\"
-Const DOFBell = 4
-Const DOFChimes = 3
-Const DOFContactors = 1
-Const DOFDropTargets = 9
-Const DOFFlippers = 7
-Const DOFGear = 5
-Const DOFKnocker = 2
-Const DOFOff = 0
-Const DOFOn = 1
-Const DOFPulse = 2
-Const DOFShaker = 6
-Const DOFTargets = 8
+'Const directory = "HKEY_CURRENT_USER\SOFTWARE\Visual Pinball\Controller\"
+'Const DOFBell = 4
+'Const DOFChimes = 3
+'Const DOFContactors = 1
+'Const DOFDropTargets = 9
+'Const DOFFlippers = 7
+'Const DOFGear = 5
+'Const DOFKnocker = 2
+'Const DOFOff = 0
+'Const DOFOn = 1
+'Const DOFPulse = 2
+'Const DOFShaker = 6
+'Const DOFTargets = 8
 Const ExtraBallAfterMonsterDefeatedValue = 1
 Const MaxMultiballs = 10
 Const MaxMultiplier = 6 
@@ -172,7 +184,15 @@ Const typefont2 = "DSEG14 Classic"
 Const typefontbold = "CCDuskTillDawnRisenUpWBold"
 Const zoombgfont = "Magic School One" ' needs to be an outline of the zoomfont
 Const zoomfont = "Magic School One"
+
+
+
+
+
+
 'dmdType
+
+
 
 
 	turnoffrules = 0 ' change to 1 to take off the backglass helper rules text during a game
@@ -320,7 +340,7 @@ Dim dmdver : dmdver = PuPDMDDriverType
 	Else
 		dmdver = 1 
 	end if
-Dim DOFeffects(9)
+'Dim DOFeffects(9)
 Dim dragonjacks(4)
 Dim dragonlock(4)
 Dim dragonmod: dragonmod=1
@@ -756,19 +776,11 @@ Dim red, orange, amber, yellow, darkgreen, green, blue, darkblue, purple, white,
 '*******************************************************************************************************************************************
 '*******************************************************************************************************************************************
 
-	LoadCoreFiles
-	Sub LoadCoreFiles
-		On Error Resume Next
-		ExecuteGlobal GetTextFile("core.vbs")
-		If Err Then MsgBox "Can't open core.vbs"
-		On Error Goto 0
-	End Sub
+
 	
 Sub table1_Exit
-	Controller.stop
-	Savehs
-'	If UseFlexDMD Then FlexDMD.Run = False
-	If B2SOn = true Then Controller.Stop
+    Savehs
+    If B2SOn = true Then Controller.Stop
 End Sub
 
 
@@ -4918,238 +4930,6 @@ Sub EndLightsequenceAnimation_timer()
 	
 End Sub
 
-'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
-' X  X  X  X  X  X  X  X  X  X  X  X  X  X  X  X  X  X  X  X  X  X  X  
-'/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/
-'\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\
-' X  X  X  X  X  X  X  X  X  X  X  X  X  X  X  X  X  X  X  X  X  X  X  
-'/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/
-'  Controller VBS stuff, but with b2s not started
-'\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\
-' X  X  X  X  X  X  X  X  X  X  X  X  X  X  X  X  X  X  X  X  X  X  X  
-'/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/
-'\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\
-' X  X  X  X  X  X  X  X  X  X  X  X  X  X  X  X  X  X  X  X  X  X  X  
-'***Controller.vbs version 1.2***'
-
-Sub LoadEM
-	LoadController("EM")
-End Sub
-
-Sub LoadPROC(VPMver, VBSfile, VBSver)
-	LoadVBSFiles VPMver, VBSfile, VBSver
-	LoadController("PROC")
-End Sub
-
-Sub LoadVPM(VPMver, VBSfile, VBSver)
-	LoadVBSFiles VPMver, VBSfile, VBSver
-	LoadController("VPM")
-End Sub
-
-Sub LoadVPMALT(VPMver, VBSfile, VBSver)
-	LoadVBSFiles VPMver, VBSfile, VBSver
-	LoadController("VPMALT")
-End Sub
-
-Sub LoadVBSFiles(VPMver, VBSfile, VBSver)
-	On Error Resume Next
-	If ScriptEngineMajorVersion < 5 Then MsgBox "VB Script Engine 5.0 or higher required"
-	ExecuteGlobal GetTextFile(VBSfile)
-	If Err Then MsgBox "Unable to open " & VBSfile & ". Ensure that it is in the same folder as this table. " & vbNewLine & Err.Description	
-	InitializeOptions
-End Sub
-
-Sub LoadVPinMAME
-	Set Controller = CreateObject("VPinMAME.Controller")
-	If Err Then MsgBox "Can't load VPinMAME." & vbNewLine & Err.Description
-	If VPMver > "" Then If Controller.Version < VPMver Or Err Then MsgBox "VPinMAME ver " & VPMver & " required."
-	If VPinMAMEDriverVer < VBSver Or Err Then MsgBox VBSFile & " ver " & VBSver & " or higher required."
-	On Error Goto 0
-End Sub
-
-Sub LoadController(TableType)
-	Dim FileObj
-	Dim DOFConfig
-	Dim TextStr2
-	Dim tempC
-	Dim count
-	Dim ISDOF
-	Dim Answer
-	
-	B2SOn = False
-	B2SOnALT = False
-	tempC = 0
-	on error resume next
-	Set objShell = CreateObject("WScript.Shell")
-	objShell.RegRead(directory & "ForceDisableB2S")
-	If Err.number <> 0 Then
-		PopupMessage = "This latest version of Controller.vbs stores its settings in the registry. To adjust the values, you must use VP 10.2 (or newer) and setup your configuration in the DOF section of the -Keys, Nudge and DOF- dialog of Visual Pinball."
-		objShell.RegWrite directory & "ForceDisableB2S",0, "REG_DWORD"
-		objShell.RegWrite directory & "DOFContactors",2, "REG_DWORD"
-		objShell.RegWrite directory & "DOFKnocker",2, "REG_DWORD"
-		objShell.RegWrite directory & "DOFChimes",2, "REG_DWORD"
-		objShell.RegWrite directory & "DOFBell",2, "REG_DWORD"
-		objShell.RegWrite directory & "DOFGear",2, "REG_DWORD"
-		objShell.RegWrite directory & "DOFShaker",2, "REG_DWORD"
-		objShell.RegWrite directory & "DOFFlippers",2, "REG_DWORD"
-		objShell.RegWrite directory & "DOFTargets",2, "REG_DWORD"
-		objShell.RegWrite directory & "DOFDropTargets",2, "REG_DWORD"
-		MsgBox PopupMessage
-	End If
-	tempC = objShell.RegRead(directory & "ForceDisableB2S")
-	DOFeffects(1)=objShell.RegRead(directory & "DOFContactors")
-	DOFeffects(2)=objShell.RegRead(directory & "DOFKnocker")
-	DOFeffects(3)=objShell.RegRead(directory & "DOFChimes")
-	DOFeffects(4)=objShell.RegRead(directory & "DOFBell")
-	DOFeffects(5)=objShell.RegRead(directory & "DOFGear")
-	DOFeffects(6)=objShell.RegRead(directory & "DOFShaker")
-	DOFeffects(7)=objShell.RegRead(directory & "DOFFlippers")
-	DOFeffects(8)=objShell.RegRead(directory & "DOFTargets")
-	DOFeffects(9)=objShell.RegRead(directory & "DOFDropTargets")
-	Set objShell = nothing
-
-	If TableType = "PROC" or TableType = "VPMALT" Then
-		If TableType = "PROC" Then
-			Set Controller = CreateObject("VPROC.Controller")
-			If Err Then MsgBox "Can't load PROC"
-		Else
-			LoadVPinMAME
-		End If		
-		If tempC = 0 Then
-			On Error Resume Next
-			If Controller is Nothing Then
-				Err.Clear
-			Else
-				Set B2SController = CreateObject("B2S.Server")
-				If B2SController is Nothing Then
-					Err.Clear
-				Else
-					B2SController.B2SName = B2ScGameName
-					B2SController.Run()
-					On Error Goto 0
-					B2SOn = True
-					B2SOnALT = True
-				End If
-			End If
-		End If
-	Else
-		If tempC = 0 Then
-			On Error Resume Next
-			Set Controller = CreateObject("B2S.Server")
-			If Controller is Nothing Then
-				Err.Clear
-				If TableType = "VPM" Then 
-					LoadVPinMAME
-				End If
-			Else
-				Controller.B2SName = cGameName
-				If TableType = "EM" Then
-					Controller.Run()
-				End If
-				On Error Goto 0
-				B2SOn = True
-			End If
-		Else
-			If TableType = "VPM" Then 
-				LoadVPinMAME
-			End If
-		End If
-		Set DOFConfig=Nothing
-		Set FileObj=Nothing
-	End If
-End sub
-
-Function SoundFX (Sound, Effect)
-	If ((Effect = 0 And B2SOn) Or DOFeffects(Effect)=1) Then
-		SoundFX = ""
-	Else
-		SoundFX = Sound
-	End If
-End Function
-
-Function SoundFXDOF (Sound, DOFevent, State, Effect)
-	If DOFeffects(Effect)=1 Then
-		SoundFXDOF = ""
-		DOF DOFevent, State
-	ElseIf DOFeffects(Effect)=2 Then
-		SoundFXDOF = Sound
-		DOF DOFevent, State
-	Else
-		SoundFXDOF = Sound
-	End If
-End Function
-
-Function SoundFXDOFALT (Sound, DOFevent, State, Effect)
-	If DOFeffects(Effect)=1 Then
-		SoundFXDOFALT = ""
-		DOFALT DOFevent, State
-	ElseIf DOFeffects(Effect)=2 Then
-		SoundFXDOFALT = Sound
-		DOFALT DOFevent, State
-	Else
-		SoundFXDOFALT = Sound
-	End If
-End Function
-
-
-'Sub DOF(DOFevent, State)
-'	ValueBox.text=DOFevent
-'	ValueBox2.text=State
-'	If B2SOn Then
-'		If State = 2 Then
-'		'	add.Controller
-'			Controller.B2SSetData DOFevent, 1 :Controller.B2SSetData DOFevent, 0
-'		Else
-'			Controller.B2SSetData DOFevent, State
-'		End If
-'	End If
-'End Sub
-dim cController
-
-'*DOF method for rom controller tables by Arngrim********************
-'*************************use Tabletype rom or em********************
-'*******Use DOF 1**, 1 to activate a ledwiz output*******************
-'*******Use DOF 1**, 0 to deactivate a ledwiz output*****************
-'*******Use DOF 1**, 2 to pulse a ledwiz output**********************
-
-'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-'				If DOF Work correctly & Video This part can be deleted, Else check the next Sub DOF(DOFevent, State)...
-'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-'Sub DOF(dofevent, dofstate)
-'	If cController=3 Then
-'		If dofstate = 2 Then
-'			Controller.B2SSetData dofevent, 1:Controller.B2SSetData dofevent, 0
-'		Else
-'			Controller.B2SSetData dofevent, dofstate
-'		End If
-'	End If
-'End Sub
-'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-'!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-Sub DOF(DOFevent, State)
-	If B2SOn Then
-		If State = 2 Then
-			Controller.B2SSetData DOFevent, 1 :Controller.B2SSetData DOFevent, 0
-		Else
-			Controller.B2SSetData DOFevent, State
-		End If
-	End If
-End Sub
-
-
-
-Sub DOFALT(DOFevent, State)
-	If B2SOnALT Then
-		If State = 2 Then
-			B2SController.B2SSetData DOFevent, 1:B2SController.B2SSetData DOFevent, 0
-		Else
-			B2SController.B2SSetData DOFevent, State
-		End If
-	End If
-End Sub
-
-
 
 
 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -5179,7 +4959,7 @@ Sub Table1_Init()
 '		B2SOn = 1 
 '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 '!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-		BallsRemaining(0)=3
+		BallsRemaining(0)=bpgcurrent
 		SpeakTime = 1000
 '		ResetValue			'Add HighScore Stern (replaced by another Sub)
 '		ResetHs				'Clear Everything
