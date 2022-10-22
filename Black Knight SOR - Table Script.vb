@@ -44,35 +44,58 @@
 '136, Knocker
 
 'DOF light config by Kongedam
-'200 Start Button
-'201 Magna save Button
-'202 Magna save Electrical Arcing Effects
-'205 Ball ready to shoot
-'220 Letter Rage: R***
-'221 Letter Rage: *A**
-'222 Letter Rage: **G*
-'223 Letter Rage: ***E
-'224 Letter Rage: RA**
-'225 Letter Rage: R*G*
-'226 Letter Rage: R**E
-'227 Letter Rage: RAG*
-'228 Letter Rage: R*GE
-'229 Letter Rage: *AG*
-'230 Letter Rage: *AGE
-'231 Letter Rage: **GE
-'232 RAGE Flash
-'300 Attract mode Effect
-'400 Bumper 1
-'401 Bumper 2
-'402 Bumper 3
-'600 "SKILL" letters flash, Splash Effect Center to Up and Down, 403 Splash Effect Center to Up and Down
-'601 1 Locked Flashing
-'602 2 Locked Flashing
-'603 MULTI Flashing, Vertically Moving Dashes, Vertically Moving Dashes
-'604 Multiball Beacon
-'600 Knight Arm
-'605 Shield and left droptaget locked 
-'700 Award replay
+'E800	Left Slingshot
+'E801	Right Slingshot
+'E802	Bumper 1
+'E803	Bumper 2
+'E804	Bumper 3
+'E805	Drained: Left Side
+'E805	Drained: Right Side
+'E806	Left OuterLane Rollover / Drain
+'E807	Right OuterLane Rollover / Drain
+'E808	Left InnerLane Rollover
+'E809	Right InnerLane Rollover
+'E810	Ball is Ready to Shoot (PlungerLane)
+'E811	Ball Launched (AutoPlunger)
+'E812	TILT
+'E813	TILT Warning
+'E814	Strobes
+'E814	Strobes Back MX
+'E815	Beacon
+'E816	Attract Mode
+'E816	Attract Mode
+'E816	Attract Mode
+'E817	Letter Rage: R***
+'E818	Letter Rage: *A**
+'E819	Letter Rage: **G*
+'E820	Letter Rage: ***E
+'E821	Letter Rage: RA**
+'E822	Letter Rage: R*G*
+'E823	Letter Rage: R**E
+'E824	Letter Rage: RAG*
+'E825	Letter Rage: R*GE
+'E826	Letter Rage: *AG*
+'E827	Letter Rage: *AGE
+'E828	Letter Rage: **GE
+'E829	RAGE Flash
+'E829	RAGE Flash Left
+'E829	RAGE Flash Right
+'E860	SKILL Flash
+'E860	SKILL Side Splash Left - Top
+'E860	SKILL Side Splash Right - Top
+'E861	Ball 1 Locked
+'E862	Ball 2 Locked
+'E863	Ball 3 Locked (Multiball)
+'E863	Multiball Flash Left
+'E863	Multiball Flash Right
+'E863	Multiball Gear Motor
+'E890	Knight rotating arm
+'E891	Shield Locked
+'E892	Start Button Flashing
+'E893	Magna Save Button Flashing
+'E894	Magna Save - Electrical Arcing Effects
+'E894	Magna Save - Electrical Arcing Effects
+'E894	Magna Save - Electrical Arcing Effects
 
 
 Option Explicit
@@ -1214,7 +1237,7 @@ Sub Video_FireAnimation2
 End Sub
 
 Sub VideocatapultBall1lock
-	DOF 601, DOFPulse
+	DOF 861, DOFPulse
 	BypassVideo = True
 	HideOverlay = True
 	VideoHideOverlay
@@ -1224,7 +1247,7 @@ Sub VideocatapultBall1lock
 '	pupevent 517
 End Sub
 Sub VideocatapultBall2lock
-	DOF 602, DOFPulse
+	DOF 862, DOFPulse
 	BypassVideo = True
 	HideOverlay = True
 	VideoHideOverlay
@@ -1234,8 +1257,8 @@ Sub VideocatapultBall2lock
 '	pupevent 518
 End Sub
 Sub VideocatapultBall3lock
-	DOF 603, DOFPulse
-	DOF 604, DOFOn
+	DOF 863, DOFPulse
+	DOF 815, DOFOn
 	BypassVideo = True
 	HideOverlay = True
 	VideoHideOverlay
@@ -1306,7 +1329,7 @@ Sub videoshotskill
 	VideoHideOverlay
 	EndOfVideo.Interval=5500
 	EndOfVideo.Enabled=True
-	DOF 600, DOFPulse
+	DOF 860, DOFPulse
 	Select Case Int(Rnd*2)+1
 		Case 1 : VideoSelected = "BlackKnight_SkillShot_1.mp4"
 		Case 2 : VideoSelected = "BlackKnight_SkillShot_2.mp4"
@@ -1695,6 +1718,7 @@ Sub ModeTotalCatapult_Timer()
 	VideoHideOverlay
 	EndOfMode.Interval=4750
 	EndOfMode.Enabled=True
+	DOF 815, DOFOff 'Beacon off
 	playmedia "BlackKnight_CatapultMultiball_ModeTotal.mp4","Catapult Multiball",pBackglass,"cineon",4750,"",1,20  '(name,playlist,channel,cinematic,length,nextitem,audiolevel,priority)
 '	puPlayer.LabelSet pBackglass,"CommentDisplayed","Catapult Multiball Total",1,""
 '	puPlayer.LabelSet pBackglass,"CommentDisplayed2","Catapult Multiball Total",1,""
@@ -1721,6 +1745,7 @@ Sub ModeTotalKnightChallenge_Timer()
 	VideoHideOverlay
 	EndOfMode.Interval=4000
 	EndOfMode.Enabled=True
+	DOF 815, DOFOff 'Beacon off
 	playmedia "TKC_ModeTotal.mp4","Catapult Multiball",pBackglass,"cineon",4000,"",1,20  '(name,playlist,channel,cinematic,length,nextitem,audiolevel,priority)
 	If priority <= 20 Then
 		pSplashCommentDisplayed "Multiball Total",3,255
@@ -1857,7 +1882,7 @@ priority = 17
 End Sub
 
 Sub Video_knightball1lock
-	DOF 601, DOFPulse
+	DOF 861, DOFPulse
 	BypassVideo = True
 	HideOverlay = True
 	VideoHideOverlay
@@ -1868,7 +1893,7 @@ priority = 18
 '	pupevent 547
 End Sub
 Sub Video_knightball2lock
-	DOF 602, DOFPulse			  
+	DOF 862, DOFPulse			  
 	BypassVideo = True
 	HideOverlay = True
 	VideoHideOverlay
@@ -1879,8 +1904,8 @@ priority = 18
 '	pupevent 548
 End Sub
 Sub Video_knightball3lock
-	DOF 603, DOFPulse
-	DOF 604, DOFOn			   
+	DOF 863, DOFPulse
+	DOF 815, DOFOn	
 	BypassVideo = True
 	HideOverlay = True
 	VideoHideOverlay
@@ -2172,7 +2197,7 @@ Sub RandomMystery4_timer()
 		BallSaveAvailable(CurrentPlayer) = True
 	ElseIf RandomMysterySelect4 = "light magna save" Then
 		MagnaSaveFlag(CurrentPlayer) = 1
-		DOF 201, DOFOn
+		DOF 893, DOFOn
 	ElseIf RandomMysterySelect4 = "light extra ball" Then
 		ExtraBallsIsLit = True
 	End If
@@ -3066,7 +3091,7 @@ Sub Video_Magna_Save
 	EndOfVideo.Interval=4000
 	EndOfVideo.Enabled=True
 	playmedia "BK_MagnaSave.mp4","Magna Save",pBackglass,"cineon",4000,"",1,5  '(name,playlist,channel,cinematic,length,nextitem,audiolevel,priority)
-	DOF 202, DOFPulse
+	DOF 894, DOFPulse
 '	pupevent 574
 End Sub
 
@@ -5061,9 +5086,9 @@ If PleaseWait = False Then
 		If PlayersPlayingGame <MaxPlayers Then
 			PlayersPlayingGame = PlayersPlayingGame + 1
 			Credits=Credits-1
-			DOF 300, DOFOff
+			DOF 816, DOFOff
 			If Credits = 0 Then
-				DOF 200, DOFOff
+				DOF 892, DOFOff
 			End IF
 '			SaveCredits
 '			Savehs
@@ -5146,8 +5171,8 @@ If PleaseWait = False Then
 		'	BumpVideo			'In Test
 
 		Credits=Credits + 1
-		DOF 200, DOFOn
-		DOF 303, DOFPulse
+		DOF 892, DOFOn
+		DOF 814, DOFPulse
 '		Savehs
 		SaveCredits
 		If InProgress= False Then PlaySound "coin" 
@@ -5192,7 +5217,7 @@ If PleaseWait = False Then
 							 
 						  
 																																			   
-				DOF 201, DOFOff
+				DOF 893, DOFOff
 				Video_Magna_Save
 				mMagnetSave.MagnetOn = 1
 				magnettimer.enabled=1						  
@@ -5661,7 +5686,7 @@ End Sub
 				'playmedia "Sound-0x0047.mp3","Audionoise",pAudio,"",0,"",1,3  '(name,playlist,channel,cinematic,length,nextitem,audiolevel,priority)
 			Else
 				pNote "CAREFUL!","TILT WARNING"
-				DOF 302, DOFPulse ' Tilt Warning
+				DOF 813, DOFPulse ' Tilt Warning
 '				pupDMDDisplay "-","Tilt^Warning!",dmdnote,3,0,10
 				'PlaySound "buzz"			
 '				PuPlayer.playlistplayex pBackglass,"videotilt","",100,1
@@ -5686,7 +5711,7 @@ End Sub
 				Video_Tilt
 			End If
 '			'DOF 310, DOFPulse   'DOF MX - TILT
-			DOF 301, DOFPulse 'Tilt
+			DOF 812, DOFPulse 'Tilt
 			DisableTable True
 			tilttime = 0
 			tilttableclear.enabled = true
@@ -9200,13 +9225,11 @@ End Sub
 		Credits = Credits + 1
 '		SaveCredits							'In comment because, in game the image block ~0,100m second
 '		Savehs								'In comment because, in game the image block ~1,500m second
-'		DOF 140, DOFOn
-		'PlaySound SoundFXDOF("knocker",136,DOFPulse,DOFKnocker)		
+		PlaySound SoundFXDOF("knocker",136,DOFPulse,DOFKnocker)		
 		playmedia "Sound-0x08E4.mp3","Audiocomment",pAudio,"",0,"",1,3  '(name,playlist,channel,cinematic,length,nextitem,audiolevel,priority)
-		'DOF 115, DOFPulse 'Strobe
 		GiEffect 1
 		LightEffect 1
-'		DOF 700, DOFPulse   'DOF MX - Replay
+		DOF 814, DOFPulse   'DOF MX - Replay
 	End Sub
 
 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
@@ -9428,7 +9451,7 @@ End Sub
 		Kicker1.Kick 300, 30, 1.56
 		'CastleVUK2.kick 300, 30, 1.56
 		playsound SoundFXDOF("ballrelease", 110, DOFPulse, DOFContactors)
-		DOF 205, DOFPulse 'Ball ready to shoot
+		DOF 810, DOFPulse 'Ball ready to shoot
 		if bBallSaverActive = False Then
 			if bballfirstball = 0  and bBallSaverReady = false Then
 				EnableBallSaver 5
@@ -9900,6 +9923,7 @@ End Sub
 
 
 sub drainvids
+	DOF 805, DOFPulse
 	playclear pMusic
 	playclear pAudio
 	EndOfBall
@@ -9934,7 +9958,7 @@ end sub
 introposition = 0
 
 	Sub DMDintroloop
-		DOF 300, DOFOn
+		DOF 816, DOFOn
 '		PuPlayer.LabelSet pBackglass,"modetitle","",1,"{'mt':2,'color':16777215, 'size': 0, 'xpos': 80.7, 'xalign': 1, 'ypos': 72.6, 'yalign': 0}"
 		introtime = 0
 		clearhslabels
@@ -10006,10 +10030,10 @@ introposition = 0
 '			loadhs
 			If Credits = 0 Then									'!!!! I think is not use ??
 				MessageCredits = "insert credits"				'!!!! I think is not use ??
-				DOF 200, DOFOff									'!!!! I think is not use ??
+				DOF 892, DOFOff									'!!!! I think is not use ??
 			Else												'!!!! I think is not use ??
 				MessageCredits = "press start"					'!!!! I think is not use ??
-				DOF 200, DOFOn									'!!!! I think is not use ??
+				DOF 892, DOFOn									'!!!! I think is not use ??
 			End If
 			PuPlayer.LabelSet pBackglass,"AttractTitleL1","",1,"{'mt':2,'color':6655, 'size': 13, 'xpos': 50, 'xalign': 1, 'ypos': 21, 'yalign': 1}"
 			PuPlayer.LabelSet pBackglass,"AttractNameL2","Credits : "&Credits,1,"{'mt':2,'color':28671, 'size': 15, 'xpos': 50, 'xalign': 1, 'ypos': 43, 'yalign': 1}"
@@ -12574,12 +12598,12 @@ Sub CheckLampAction_Timer()
 '*************************************************************************************************************
 	If MagnaSaveFlag(CurrentPlayer) = 1 Then
 		L24.State = 1
-		DOF 201, DOFOn
+		DOF 893, DOFOn
 	End If
 
 	If L110.State = 1 And L111.State = 1 And L112.State = 1 Then
 		MagnaSaveFlag(CurrentPlayer) = 1
-		DOF 201, DOFOn
+		DOF 893, DOFOn
 		L24.State = 1
 		L110.State = 2
 		L111.State = 2
@@ -12616,7 +12640,7 @@ If BallsOnPlayfield > 0 Then			' Commented but I don't know the reason...
 						SpeakTime = 1996
 						LightEyesBK
 						playmedia "Sound-0x0211.mp3","Audioknight",pAudio,"",0,"",1,3  '(name,playlist,channel,cinematic,length,nextitem,audiolevel,priority) 'Play sound RAGE!!!!
-					    DOF 232, DOFPulse
+					    DOF 829, DOFPulse
 						RageCount = RageCount + 1
 						If RageCount => DifficultyRageCountMystery Then						'!!!!!!!!!! modify after RageCount
 							MysteryFlag = True
@@ -13618,7 +13642,7 @@ end sub
 		'GiEffect 1
 		'LightEffect 2
 		'LightEffect 9
-'		DOF 600, DOFPulse   'DOF MX - Skillshot
+'		DOF 860, DOFPulse   'DOF MX - Skillshot
 		If SkillshotValue = 1000000 then
 			'PuPlayer.playlistplayex pCallouts,"audiocallouts","skillshot.mp3",vovol,1
 			playmedia "skillshot.mp3","audiocallouts",pCallouts,"",0,"",1,1  '(name,playlist,channel,cinematic,length,nextitem,audiolevel,priority)
@@ -14218,7 +14242,7 @@ Sub ShieldTimer_Timer()
 		Shield_lock = True
 		ShieldTimer.Enabled=False
 		DOF 112, DOFPulse
-		DOF 605, DOFPulse
+		DOF 891, DOFPulse
 		pupevent 505
 	End If
 	If Shield_New_Status = "lock" Then
@@ -14272,6 +14296,7 @@ End Sub
 ' X  X  X  X  X  X  X  X  X  X  X  X  X  X  X  X  X  X  X  X  X  X  X  
 
 sub SW1_hit() 'R*** in (RAGE)
+	DOF 806, DOFPulse
 	If SuperLanes = True Then
 		AddScoreChestJackpot = AddScoreChestJackpot + AddScoreSuperLanes
 	End If
@@ -14295,33 +14320,34 @@ sub SW1_hit() 'R*** in (RAGE)
 	BaseBonus = BaseBonus + 1800
 	L11.state=1
 	If L11.state=1 And L12.state=0 And L15.state=0 And L16.state=0  Then 'R***
-		DOF 220, DOFPulse
+		DOF 817, DOFPulse
 	ElseIf L11.state=0 And L12.state=1 And L15.state=0 And L16.state=0  Then '*A**
-		DOF 221, DOFPulse
+		DOF 818, DOFPulse
 	ElseIf L11.state=0 And L12.state=0 And L15.state=1 And L16.state=0  Then '**G*
-		DOF 222, DOFPulse
+		DOF 819, DOFPulse
 	ElseIf L11.state=0 And L12.state=0 And L15.state=0 And L16.state=1  Then '***E
-		DOF 223, DOFPulse
+		DOF 820, DOFPulse
 	ElseIf L11.state=1 And L12.state=1 And L15.state=0 And L16.state=0  Then 'RA**
-		DOF 224, DOFPulse	
+		DOF 821, DOFPulse	
 	ElseIf L11.state=1 And L12.state=0 And L15.state=1 And L16.state=0  Then 'R*G*
-		DOF 225, DOFPulse
+		DOF 822, DOFPulse
 	ElseIf L11.state=1 And L12.state=0 And L15.state=0 And L16.state=1  Then 'R**E
-		DOF 226, DOFPulse
+		DOF 823, DOFPulse
 	ElseIf L11.state=1 And L12.state=1 And L15.state=1 And L16.state=0  Then 'RAG*
-		DOF 227, DOFPulse	
+		DOF 824, DOFPulse	
 	ElseIf L11.state=1 And L12.state=0 And L15.state=1 And L16.state=1  Then 'R*GE
-		DOF 228, DOFPulse	
+		DOF 825, DOFPulse	
 	ElseIf L11.state=0 And L12.state=1 And L15.state=1 And L16.state=0  Then '*AG*
-		DOF 229, DOFPulse	
+		DOF 826, DOFPulse	
 	ElseIf L11.state=0 And L12.state=1 And L15.state=1 And L16.state=1  Then '*AGE
-		DOF 230, DOFPulse	
+		DOF 827, DOFPulse	
 	ElseIf L11.state=0 And L12.state=0 And L15.state=1 And L16.state=1  Then '**GE
-		DOF 231, DOFPulse
+		DOF 828, DOFPulse
 	End If
 end Sub
 
 sub SW2_hit() '*A** in (RAGE)
+	DOF 808, DOFPulse
 	If SuperLanes = True Then
 		AddScoreChestJackpot = AddScoreChestJackpot + AddScoreSuperLanes
 	End If
@@ -14335,32 +14361,33 @@ sub SW2_hit() '*A** in (RAGE)
 	BaseBonus = BaseBonus + 1800
 	L12.state=1
 	If L11.state=1 And L12.state=0 And L15.state=0 And L16.state=0  Then 'R***
-		DOF 220, DOFPulse
+		DOF 817, DOFPulse
 	ElseIf L11.state=0 And L12.state=1 And L15.state=0 And L16.state=0  Then '*A**
-		DOF 221, DOFPulse
+		DOF 818, DOFPulse
 	ElseIf L11.state=0 And L12.state=0 And L15.state=1 And L16.state=0  Then '**G*
-		DOF 222, DOFPulse
+		DOF 819, DOFPulse
 	ElseIf L11.state=0 And L12.state=0 And L15.state=0 And L16.state=1  Then '***E
-		DOF 223, DOFPulse
+		DOF 820, DOFPulse
 	ElseIf L11.state=1 And L12.state=1 And L15.state=0 And L16.state=0  Then 'RA**
-		DOF 224, DOFPulse	
+		DOF 821, DOFPulse	
 	ElseIf L11.state=1 And L12.state=0 And L15.state=1 And L16.state=0  Then 'R*G*
-		DOF 225, DOFPulse
+		DOF 822, DOFPulse
 	ElseIf L11.state=1 And L12.state=0 And L15.state=0 And L16.state=1  Then 'R**E
-		DOF 226, DOFPulse
+		DOF 823, DOFPulse
 	ElseIf L11.state=1 And L12.state=1 And L15.state=1 And L16.state=0  Then 'RAG*
-		DOF 227, DOFPulse	
+		DOF 824, DOFPulse	
 	ElseIf L11.state=1 And L12.state=0 And L15.state=1 And L16.state=1  Then 'R*GE
-		DOF 228, DOFPulse	
+		DOF 825, DOFPulse	
 	ElseIf L11.state=0 And L12.state=1 And L15.state=1 And L16.state=0  Then '*AG*
-		DOF 229, DOFPulse	
+		DOF 826, DOFPulse	
 	ElseIf L11.state=0 And L12.state=1 And L15.state=1 And L16.state=1  Then '*AGE
-		DOF 230, DOFPulse	
+		DOF 827, DOFPulse	
 	ElseIf L11.state=0 And L12.state=0 And L15.state=1 And L16.state=1  Then '**GE
-		DOF 231, DOFPulse
+		DOF 828, DOFPulse
 	End If
 end Sub
 sub SW5_hit() '**G* in (RAGE)
+	DOF 809, DOFPulse
 	If SuperLanes = True Then
 		AddScoreChestJackpot = AddScoreChestJackpot + AddScoreSuperLanes
 	End If
@@ -14375,33 +14402,34 @@ sub SW5_hit() '**G* in (RAGE)
 		BaseBonus = BaseBonus + 1800
 		L15.state=1
 		If L11.state=1 And L12.state=0 And L15.state=0 And L16.state=0  Then 'R***
-			DOF 220, DOFPulse
+			DOF 817, DOFPulse
 		ElseIf L11.state=0 And L12.state=1 And L15.state=0 And L16.state=0  Then '*A**
-			DOF 221, DOFPulse
+			DOF 818, DOFPulse
 		ElseIf L11.state=0 And L12.state=0 And L15.state=1 And L16.state=0  Then '**G*
-			DOF 222, DOFPulse
+			DOF 819, DOFPulse
 		ElseIf L11.state=0 And L12.state=0 And L15.state=0 And L16.state=1  Then '***E
-			DOF 223, DOFPulse
+			DOF 820, DOFPulse
 		ElseIf L11.state=1 And L12.state=1 And L15.state=0 And L16.state=0  Then 'RA**
-			DOF 224, DOFPulse	
+			DOF 821, DOFPulse	
 		ElseIf L11.state=1 And L12.state=0 And L15.state=1 And L16.state=0  Then 'R*G*
-			DOF 225, DOFPulse
+			DOF 822, DOFPulse
 		ElseIf L11.state=1 And L12.state=0 And L15.state=0 And L16.state=1  Then 'R**E
-			DOF 226, DOFPulse
+			DOF 823, DOFPulse
 		ElseIf L11.state=1 And L12.state=1 And L15.state=1 And L16.state=0  Then 'RAG*
-			DOF 227, DOFPulse	
+			DOF 824, DOFPulse	
 		ElseIf L11.state=1 And L12.state=0 And L15.state=1 And L16.state=1  Then 'R*GE
-			DOF 228, DOFPulse	
+			DOF 825, DOFPulse	
 		ElseIf L11.state=0 And L12.state=1 And L15.state=1 And L16.state=0  Then '*AG*
-			DOF 229, DOFPulse	
+			DOF 826, DOFPulse	
 		ElseIf L11.state=0 And L12.state=1 And L15.state=1 And L16.state=1  Then '*AGE
-			DOF 230, DOFPulse	
+			DOF 827, DOFPulse	
 		ElseIf L11.state=0 And L12.state=0 And L15.state=1 And L16.state=1  Then '**GE
-			DOF 231, DOFPulse
+			DOF 828, DOFPulse
 		End If
 	End If
 end Sub
 sub SW6_hit() '***E in (RAGE)
+	DOF 807, DOFPulse
 	If SuperLanes = True Then
 		AddScoreChestJackpot = AddScoreChestJackpot + AddScoreSuperLanes
 	End If
@@ -14415,29 +14443,29 @@ sub SW6_hit() '***E in (RAGE)
 	BaseBonus = BaseBonus + 1800
 	L16.state=1
 	If L11.state=1 And L12.state=0 And L15.state=0 And L16.state=0  Then 'R***
-		DOF 220, DOFPulse
+		DOF 817, DOFPulse
 	ElseIf L11.state=0 And L12.state=1 And L15.state=0 And L16.state=0  Then '*A**
-		DOF 221, DOFPulse
+		DOF 818, DOFPulse
 	ElseIf L11.state=0 And L12.state=0 And L15.state=1 And L16.state=0  Then '**G*
-		DOF 222, DOFPulse
+		DOF 819, DOFPulse
 	ElseIf L11.state=0 And L12.state=0 And L15.state=0 And L16.state=1  Then '***E
-		DOF 223, DOFPulse
+		DOF 820, DOFPulse
 	ElseIf L11.state=1 And L12.state=1 And L15.state=0 And L16.state=0  Then 'RA**
-		DOF 224, DOFPulse	
+		DOF 821, DOFPulse	
 	ElseIf L11.state=1 And L12.state=0 And L15.state=1 And L16.state=0  Then 'R*G*
-		DOF 225, DOFPulse
+		DOF 822, DOFPulse
 	ElseIf L11.state=1 And L12.state=0 And L15.state=0 And L16.state=1  Then 'R**E
-		DOF 226, DOFPulse
+		DOF 823, DOFPulse
 	ElseIf L11.state=1 And L12.state=1 And L15.state=1 And L16.state=0  Then 'RAG*
-		DOF 227, DOFPulse	
+		DOF 824, DOFPulse	
 	ElseIf L11.state=1 And L12.state=0 And L15.state=1 And L16.state=1  Then 'R*GE
-		DOF 228, DOFPulse	
+		DOF 825, DOFPulse	
 	ElseIf L11.state=0 And L12.state=1 And L15.state=1 And L16.state=0  Then '*AG*
-		DOF 229, DOFPulse	
+		DOF 826, DOFPulse	
 	ElseIf L11.state=0 And L12.state=1 And L15.state=1 And L16.state=1  Then '*AGE
-		DOF 230, DOFPulse	
+		DOF 827, DOFPulse	
 	ElseIf L11.state=0 And L12.state=0 And L15.state=1 And L16.state=1  Then '**GE
-		DOF 231, DOFPulse
+		DOF 828, DOFPulse
 	End If
 end Sub
 
@@ -14588,7 +14616,7 @@ Sub RightSlingShot_Slingshot
 	AddScore 10170
 	BaseBonus = BaseBonus + 1800
     PlaySound SoundFXDOF("right_slingshot", 105, DOFPulse, DOFContactors)
-	DOF 211, DOFPulse
+	DOF 801, DOFPulse
     RSling.Visible = 0
     RSling1.Visible = 1
     sling1.rotx = 20
@@ -14612,7 +14640,7 @@ Sub LeftSlingShot_Slingshot
 	AddScore 10170
 	BaseBonus = BaseBonus + 1800
     PlaySound SoundFXDOF("left_slingshot", 103, DOFPulse, DOFContactors)
-	DOF 210, DOFPulse
+	DOF 800, DOFPulse
     LSling.Visible = 0
     LSling1.Visible = 1
     sling2.rotx = 20
@@ -15045,7 +15073,7 @@ sub magnettimer_timer()
 	mMagnetSave.MagnetOn = 0
 	L24.State=0
 	MagnaSaveFlag(CurrentPlayer) = 0
-	DOF 201, DOFOff
+	DOF 893, DOFOff
 end Sub
 
 '********************************************
@@ -15182,7 +15210,7 @@ End Sub
 
 sub SW23_hit
 	PlaySoundAt "fx_launchball", Plunger
-	DOF 206, DOFPulse
+	DOF 811, DOFPulse
 End Sub
 
 sub SW60_hit
@@ -15847,7 +15875,7 @@ Sub boule_hit()
 End Sub
 
 sub timer2_Timer()
-	DOF 606, DOFOn
+	DOF 890, DOFOn
 	BouleAngle = BouleAngle + 5
 	If BouleAngle = 180 Then
 		boule.collidable=True
@@ -15868,7 +15896,7 @@ sub timer2_Timer()
 	If BouleAngle = StopBouleAngle Then
 		If StopBouleFlag = True Then
 			timer2.Enabled=False
-			DOF 606, DOFOff
+			DOF 890, DOFOff
 			StopSound "Sound-0x0111"
 			StopSound "Sound-0x0111"
 		End If
@@ -15895,7 +15923,7 @@ sub SW70_hit()
 		AddScoreChestJackpot = AddScoreChestJackpot + AddScoreSuperPops
 	End If
 	playsound SoundFXDOF("fx_bumper1",107,DOFPulse,DOFContactors)
-	DOF 400, DOFPulse			  
+	DOF 802, DOFPulse			  
 	addscore 10470
 	BaseBonus = BaseBonus + 1800
 	If CurrentMissionFlag(CurrentPlayer) = 0 Then
@@ -15911,7 +15939,7 @@ sub SW71_hit()
 		AddScoreChestJackpot = AddScoreChestJackpot + AddScoreSuperPops
 	End If
 	playsound SoundFXDOF("fx_bumper3",109,DOFPulse,DOFContactors)
-	DOF 401, DOFPulse
+	DOF 803, DOFPulse
 	addscore 10470
 	BaseBonus = BaseBonus + 1800
 	If CurrentMissionFlag(CurrentPlayer) = 0 Then
@@ -15927,7 +15955,7 @@ sub SW72_hit()
 		AddScoreChestJackpot = AddScoreChestJackpot + AddScoreSuperPops
 	End If
 	playsound SoundFXDOF("fx_bumper2",108,DOFPulse,DOFContactors)
-	DOF 402, DOFPulse
+	DOF 804, DOFPulse
 	addscore 10470
 	BaseBonus = BaseBonus + 1800
 	If CurrentMissionFlag(CurrentPlayer) = 0 Then
@@ -17290,7 +17318,7 @@ End Sub
 Sub SW41_Hit()
 	OrbitFlag = False
 	OrbitStatus.Enabled = True
-	DOF 605, DOFPulse
+	DOF 891, DOFPulse
 	If TimeSuperMode.Enabled = False Then
 		ChangeSuperModeColor
 		Select Case Int(Rnd*3)+1
