@@ -80,6 +80,12 @@
 'E829	RAGE Flash
 'E829	RAGE Flash Left
 'E829	RAGE Flash Right
+'E830	WAR Explosion
+'E831	Left Taregets
+'E832	Right Targets
+'E833	W Animation
+'E834	A Animation
+'E835	R Animation
 'E860	SKILL Flash
 'E860	SKILL Side Splash Left - Top
 'E860	SKILL Side Splash Right - Top
@@ -12567,6 +12573,7 @@ If BallsOnPlayfield > 0 Then			' Commented but I don't know the reason...
 				Else
 					SpeakTime = 1467
 					LightEyesBK
+					DOF 830, DOFPulse
 					playmedia "Sound-0x01FF.mp3","Audioknight",pAudio,"",0,"",1,3  '(name,playlist,channel,cinematic,length,nextitem,audiolevel,priority) 'Play Sound WAR
 					WarCount = WarCount + 1 
 					If CurrentMissionFlag(CurrentPlayer) = False And WarHurryFlag = False Then
@@ -14370,6 +14377,7 @@ sub SW6_hit() '***E in (RAGE)
 end Sub
 
 sub SW66_hit()  'sub SW66_hit(f) W** in (WAR)
+	DOF 833, DOFPulse
 	If SuperLanes = True Then
 		AddScoreChestJackpot = AddScoreChestJackpot + AddScoreSuperLanes
 	End If
@@ -14387,6 +14395,7 @@ sub SW66_hit()  'sub SW66_hit(f) W** in (WAR)
 end Sub
 
 sub SW67_hit() 'sub SW67_hit(g) *A* in (WAR)
+	DOF 834, DOFPulse
 	If SuperLanes = True Then
 		AddScoreChestJackpot = AddScoreChestJackpot + AddScoreSuperLanes
 	End If
@@ -14403,6 +14412,7 @@ sub SW67_hit() 'sub SW67_hit(g) *A* in (WAR)
 end Sub
 
 sub SW68_hit() 'sub SW68_hit(h) **R in (WAR)
+	DOF 835, DOFPulse
 	If SuperLanes = True Then
 		AddScoreChestJackpot = AddScoreChestJackpot + AddScoreSuperLanes
 	End If
@@ -14842,6 +14852,7 @@ sub SW59_hit()
 end sub
 
 sub SW26_hit()
+	DOF 831, DOFPulse
 	If SuperTargets = True Then
 		AddScoreChestJackpot = AddScoreChestJackpot + AddScoreSuperTargets
 	End If
@@ -14864,6 +14875,7 @@ sub SW26_hit()
 end sub
 
 sub SW27_hit()
+	DOF 831, DOFPulse
 	If SuperTargets = True Then
 		AddScoreChestJackpot = AddScoreChestJackpot + AddScoreSuperTargets
 	End If
@@ -14885,6 +14897,7 @@ sub SW27_hit()
 end sub
 
 sub SW33_hit()
+	DOF 832, DOFPulse
 	If SuperTargets = True Then
 		AddScoreChestJackpot = AddScoreChestJackpot + AddScoreSuperTargets
 	End If
@@ -14903,6 +14916,7 @@ sub SW33_hit()
 end sub
 
 sub SW34_hit()
+	DOF 832, DOFPulse
 	If SuperTargets = True Then
 		AddScoreChestJackpot = AddScoreChestJackpot + AddScoreSuperTargets
 	End If
@@ -14921,6 +14935,7 @@ sub SW34_hit()
 end sub
 
 sub SW35_hit()
+	DOF 832, DOFPulse
 	If SuperTargets = True Then
 		AddScoreChestJackpot = AddScoreChestJackpot + AddScoreSuperTargets
 	End If
