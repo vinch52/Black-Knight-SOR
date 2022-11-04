@@ -59,11 +59,8 @@
 'E811	Ball Launched (AutoPlunger)
 'E812	TILT
 'E813	TILT Warning
-'E814	Strobes
-'E814	Strobes Back MX
+'E814	Strobes + Back MX
 'E815	Beacon
-'E816	Attract Mode
-'E816	Attract Mode
 'E816	Attract Mode
 'E817	Letter Rage: R***
 'E818	Letter Rage: *A**
@@ -78,8 +75,6 @@
 'E827	Letter Rage: *AGE
 'E828	Letter Rage: **GE
 'E829	RAGE Flash
-'E829	RAGE Flash Left
-'E829	RAGE Flash Right
 'E830	WAR Explosion
 'E831	Left Taregets
 'E832	Right Targets
@@ -87,21 +82,15 @@
 'E834	A Animation
 'E835	R Animation
 'E860	SKILL Flash
-'E860	SKILL Side Splash Left - Top
-'E860	SKILL Side Splash Right - Top
 'E861	Ball 1 Locked
 'E862	Ball 2 Locked
 'E863	Ball 3 Locked (Multiball)
-'E863	Multiball Flash Left
-'E863	Multiball Flash Right
-'E863	Multiball Gear Motor
 'E890	Knight rotating arm
 'E891	Shield Locked
 'E892	Start Button Flashing
 'E893	Magna Save Button Flashing
 'E894	Magna Save - Electrical Arcing Effects
-'E894	Magna Save - Electrical Arcing Effects
-'E894	Magna Save - Electrical Arcing Effects
+
 
 
 Option Explicit
@@ -117,7 +106,44 @@ Const TargetBouncerEnabled = 1 		'0 = normal standup targets, 1 = bouncy targets
 Const TargetBouncerFactor = 0.7 	'Level of bounces. Recommmended value of 0.7
 
 
-Const BallMass = 1 ' 1.7    ' standard ball mass in JP's VPX Physics 3.0
+'----- Shadow Options -----
+Const DynamicBallShadowsOn = 1		'0 = no dynamic ball shadow ("triangles" near slings and such), 1 = enable dynamic ball shadow
+Const AmbientBallShadowOn = 1		'0 = Static shadow under ball ("flasher" image, like JP's)
+									'1 = Moving ball shadow ("primitive" object, like ninuzzu's) - This is the only one that shows up on the pf when in ramps and fades when close to lights!
+									'2 = flasher image shadow, but it moves like ninuzzu's
+
+'***********	Set the default LUT set	*********************************
+
+'You can change LUT option within game with left and right CTRL keys
+Dim LUTset, DisableLUTSelector, LutToggleSound
+LoadLUT
+'LUTset = 11	'override saved LUT for debug
+SetLUT
+
+DisableLUTSelector = 0  ' Disables the ability to change LUT option with magna saves in game when set to 1
+LutToggleSound = 1		' Enables sound when changing LUT lighting.  Switch to 0 to disable.
+
+
+'LUTset Types:
+'-1 = Original (Additional selection to this table)
+'0 = Fleep Natural Dark 1
+'1 = Fleep Natural Dark 2
+'2 = Fleep Warm Dark
+'3 = Fleep Warm Bright
+'4 = Fleep Warm Vivid Soft
+'5 = Fleep Warm Vivid Hard
+'6 = Skitso Natural and Balanced
+'7 = Skitso Natural High Contrast
+'8 = 3rdaxis Referenced THX Standard
+'9 = CalleV Punchy Brightness and Contrast
+'10 = TT & Ninuzzu Original
+'11 = VPW Orig
+'12 = VPW LUT1on1
+'13 = VPW LUTbassgeige1
+'14 = VPW LUTblacklight
+
+
+Const BallMass = 1' 1.7    ' standard ball mass in JP's VPX Physics 3.0
 Const Ballsize = 50
 Const tnob = 11						'Total number of balls
 Const lob = 0						'Locked balls
@@ -125,6 +151,7 @@ Const lob = 0						'Locked balls
 Dim tablewidth: tablewidth = Table1.width
 Dim tableheight: tableheight = Table1.height
 Dim BIPL : BIPL = False				'Ball in plunger lane
+Dim gilvl:gilvl = 1		'General Illumination light state tracked for Dynamic Ball Shadows
 
 
 LoadCoreFiles
@@ -825,6 +852,7 @@ Dim red, orange, amber, yellow, darkgreen, green, blue, darkblue, purple, white,
 
 	
 Sub table1_Exit
+	SaveLUT
     Savehs
     If B2SOn = true Then Controller.Stop
 End Sub
@@ -5072,9 +5100,9 @@ Sub Table1_Init()
 	' MATHS
 	'********************
 
-	Function RndNum(min,max)
-	 RndNum = Int(Rnd()*(max-min+1))+min     ' Sets a random number between min AND max
-	End Function
+'	Function RndNum(min,max)
+'	 RndNum = Int(Rnd()*(max-min+1))+min     ' Sets a random number between min AND max
+'	End Function
 
 'XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX
 ' X  X  X  X  X  X  X  X  X  X  X  X  X  X  X  X  X  X  X  X  X  X  X  
@@ -5092,6 +5120,8 @@ Sub Table1_Init()
 Sub Table1_KeyDown(ByVal Keycode)
 	BallRemainingPrevision = BallsRemaining(CurrentPlayer) - 1
 	
+	LUTSelectionKeyDown Keycode
+
 	If PleaseWait = False Then
 		If keycode = PlungerKey Then
 			If EnableRetractPlunger Then
@@ -5448,7 +5478,7 @@ End Sub
 Sub SolRFlipper(Enabled)
     If Enabled Then
 		RF.Fire 'RightFlipper.RotateToEnd
-		UPRightFlipper.RotateToEnd
+		RFU.Fire 'UPRightFlipper.RotateToEnd
 
 		If RightFlipper.currentangle > RightFlipper.endangle - ReflipAngle Then
 			RandomSoundReflipUpRight RightFlipper
@@ -5782,9 +5812,9 @@ End Sub
 TableWidth = Table1.width
 TableHeight = Table1.height
 
-Function Vol(ball) ' Calculates the Volume of the sound based on the ball speed
-    Vol = Csng(BallVel(ball) ^2 / 2000)
-End Function
+'Function Vol(ball) ' Calculates the Volume of the sound based on the ball speed
+'    Vol = Csng(BallVel(ball) ^2 / 2000)
+'End Function
 
 Function Pan(ball) ' Calculates the pan for a ball based on the X position on the table. "table1" is the name of the table
     Dim tmp
@@ -5796,33 +5826,33 @@ Function Pan(ball) ' Calculates the pan for a ball based on the X position on th
     End If
 End Function
 
-Function AudioPan(tableobj) ' Calculates the pan for a tableobj based on the X position on the table. "table1" is the name of the table
-    Dim tmp
-    tmp = tableobj.x * 2 / table1.width-1
-    If tmp > 0 Then
-        AudioPan = Csng(tmp ^10)
-    Else
-        AudioPan = Csng(-((- tmp) ^10) )
-    End If
-End Function
+'Function AudioPan(tableobj) ' Calculates the pan for a tableobj based on the X position on the table. "table1" is the name of the table
+'    Dim tmp
+'    tmp = tableobj.x * 2 / table1.width-1
+'    If tmp > 0 Then
+'        AudioPan = Csng(tmp ^10)
+'    Else
+'        AudioPan = Csng(-((- tmp) ^10) )
+'    End If
+'End Function
 
-Function Pitch(ball) ' Calculates the pitch of the sound based on the ball speed
-    Pitch = BallVel(ball) * 20
-End Function
+'Function Pitch(ball) ' Calculates the pitch of the sound based on the ball speed
+'    Pitch = BallVel(ball) * 20
+'End Function
 
-Function BallVel(ball) 'Calculates the ball speed
-    BallVel = (SQR((ball.VelX ^2) + (ball.VelY ^2)))
-End Function
+'Function BallVel(ball) 'Calculates the ball speed
+'    BallVel = (SQR((ball.VelX ^2) + (ball.VelY ^2)))
+'End Function
 
-Function AudioFade(ball) 'only on VPX 10.4 and newer
-    Dim tmp
-    tmp = ball.y * 2 / TableHeight-1
-    If tmp > 0 Then
-        AudioFade = Csng(tmp ^10)
-    Else
-        AudioFade = Csng(-((- tmp) ^10))
-    End If
-End Function
+'Function AudioFade(ball) 'only on VPX 10.4 and newer
+'    Dim tmp
+'    tmp = ball.y * 2 / TableHeight-1
+'    If tmp > 0 Then
+'        AudioFade = Csng(tmp ^10)
+'    Else
+'        AudioFade = Csng(-((- tmp) ^10))
+'    End If
+'End Function
 
 																																  
 																			   
@@ -5847,17 +5877,17 @@ Sub PlayXYSound(soundname, tableobj, loopcount, volume, randompitch, pitch, usee
 End Sub
 
 ' Similar subroutines that are less complicated to use (e.g. simply use standard parameters for the PlaySound call)
-Sub PlaySoundAt(soundname, tableobj)
-    PlaySound soundname, 1, 1, AudioPan(tableobj), 0,0,0, 1, AudioFade(tableobj)
-End Sub
+'Sub PlaySoundAt(soundname, tableobj)
+'    PlaySound soundname, 1, 1, AudioPan(tableobj), 0,0,0, 1, AudioFade(tableobj)
+'End Sub
 
-Sub PlaySoundAtVol(soundname, tableobj, vol)
-    PlaySound soundname, 1, (vol), AudioPan(tableobj), 0,0,0, 1, AudioFade(tableobj)
-End Sub
+'Sub PlaySoundAtVol(soundname, tableobj, vol)
+'    PlaySound soundname, 1, (vol), AudioPan(tableobj), 0,0,0, 1, AudioFade(tableobj)
+'End Sub
 
-Sub PlaySoundAtBall(soundname)
-    PlaySoundAt soundname, ActiveBall
-End Sub
+'Sub PlaySoundAtBall(soundname)
+'    PlaySoundAt soundname, ActiveBall
+'End Sub
 
 
 '******************************
@@ -15134,7 +15164,7 @@ sub SW23_hit
 End Sub
 
 sub SW60_hit
-	PlaySound ""
+	SoundSaucerLock
 	OrbitFlag = False
 	OrbitStatus.Enabled = True
 	SW60videoDelay = 100
@@ -15349,7 +15379,7 @@ End Sub
 
 sub timer004_Timer()
 	timer004.Enabled = False
-	playsound SoundFXDOF("ballrelease", 113, DOFPulse, DOFContactors)
+	SoundSaucerKick 1, Sw60
 	SW60.kick 300, 30, 1.56
 	If RetroMode = 0 Then
 		If CurrentMissionFlag(CurrentPlayer) = 0 Then
@@ -15564,7 +15594,8 @@ End Sub
 Sub AddToSkill(swNo):bsSkill.AddBall 0:End Sub
 
 sub kicker006_hit()
-	SoundSaucerKick 1, Kicker006
+	'SoundSaucerKick 1, Kicker006
+	SoundSaucerLock
 	WireRampOff
 
 	'a=a+1
@@ -15654,7 +15685,8 @@ sub timer003_Timer()
 	SoundSaucerKick 1, SW45
 	'playsound "ballrelease"
 	
-	CastleVUK2.createball
+	Dim ball
+	Set ball = CastleVUK2.createball
 	'CastleVUK2.kick  90,10
 	playsound "fx_plastichit"
 '	CountSW45used(CurrentPlayer) = CountSW45used(CurrentPlayer) + 1
@@ -15686,6 +15718,7 @@ sub timer003_Timer()
 
 '	playsound "ballrelease"
 	CastleVUK2.kick 295, 200, 1.56
+	WireRampOn2 True, ball
 	DOF 121, DOFPulse
 	AddScore 10000
 	BaseBonus = BaseBonus + 1800
@@ -17542,6 +17575,431 @@ End Sub
 
 
 '******************************************************
+' 					LUT
+'******************************************************
+
+Sub SetLUT  'AXS
+	Table1.ColorGradeImage = "LUT" & LUTset
+end sub 
+
+Sub LUTBox_Timer
+	LUTBox.TimerEnabled = 0 
+	LUTBox.Visible = 0
+End Sub
+
+Sub ShowLUT
+	LUTBox.visible = 1
+	Select Case LUTSet
+		Case -1: LUTBox.text = "Original"
+		Case 0: LUTBox.text = "Fleep Natural Dark 1"
+		Case 1: LUTBox.text = "Fleep Natural Dark 2"
+		Case 2: LUTBox.text = "Fleep Warm Dark"
+		Case 3: LUTBox.text = "Fleep Warm Bright"
+		Case 4: LUTBox.text = "Fleep Warm Vivid Soft"
+		Case 5: LUTBox.text = "Fleep Warm Vivid Hard"
+		Case 6: LUTBox.text = "Skitso Natural and Balanced"
+		Case 7: LUTBox.text = "Skitso Natural High Contrast"
+		Case 8: LUTBox.text = "3rdaxis Referenced THX Standard"
+		Case 9: LUTBox.text = "CalleV Punchy Brightness and Contrast"
+		Case 10: LUTBox.text = "TT & Ninuzzu Original"
+  		Case 11: LUTBox.text = "*VPin Workshop Original"
+        Case 12: LUTBox.text = "1on1"
+        Case 13: LUTBox.text = "bassgeige"
+        Case 14: LUTBox.text = "blacklight"
+	End Select
+	LUTBox.TimerEnabled = 1
+End Sub
+
+Const LUTFileName = "BLACKKNIGHT.txt"
+Const LUTMinOption = -1
+Const LUTDefaultOption = -1
+
+Sub SaveLUT
+	Dim FileObj
+	Dim ScoreFile
+
+	Set FileObj=CreateObject("Scripting.FileSystemObject")
+	If Not FileObj.FolderExists(UserDirectory) then 
+		Exit Sub
+	End if
+
+	if LUTset = "" then LUTset = LUTMinOption 'failsafe
+
+	Set ScoreFile=FileObj.CreateTextFile(UserDirectory & LUTFileName,True)
+	ScoreFile.WriteLine LUTset
+	Set ScoreFile=Nothing
+	Set FileObj=Nothing
+End Sub
+
+Sub LoadLUT
+
+	Dim FileObj, ScoreFile, TextStr
+	dim rLine
+
+	Set FileObj=CreateObject("Scripting.FileSystemObject")
+	If Not FileObj.FolderExists(UserDirectory) then 
+		LUTset=LUTDefaultOption
+		Exit Sub
+	End if
+
+	If Not FileObj.FileExists(UserDirectory & LUTFileName) then
+		LUTset=LUTDefaultOption
+		Exit Sub
+	End if
+
+	Set ScoreFile=FileObj.GetFile(UserDirectory & LUTFileName)
+	Set TextStr=ScoreFile.OpenAsTextStream(1,0)
+
+	If (TextStr.AtEndOfStream=True) then
+		Exit Sub
+	End if
+
+	rLine = TextStr.ReadLine
+	If rLine = "" then
+		LUTset=LUTDefaultOption
+		Exit Sub
+	End if
+
+	LUTset = int (rLine)
+
+	Set ScoreFile = Nothing
+	Set FileObj = Nothing
+
+End Sub
+
+Sub LUTSelectionKeyDown(ByVal Keycode)
+	'If keycode = RightMagnaSave Then 'AXS 'Fleep
+	If keycode = LeftMagnaSave Then 'AXS 'Fleep
+		if DisableLUTSelector = 0 then
+			If LutToggleSound Then
+				Playsound "Click"
+			End If
+            LUTSet = LUTSet  + 1
+			if LutSet > 14 then LUTSet = LUTMinOption
+			SetLUT
+			ShowLUT
+		end if
+	end if
+'	If keycode = LeftMagnaSave Then
+'		if DisableLUTSelector = 0 then
+'			If LutToggleSound Then
+'				Playsound "Click"
+'			End If
+'			LUTSet = LUTSet - 1
+'			if LutSet < LUTMinOption then LUTSet = 14
+'			SetLUT
+'			ShowLUT
+'		end if
+'	end if
+End Sub
+
+
+'***************************************************************
+'****  VPW DYNAMIC BALL SHADOWS by Iakki, Apophis, and Wylte
+'***************************************************************
+
+'****** INSTRUCTIONS please read ******
+
+'****** Part A:  Table Elements ******
+'
+' Import the "bsrtx7" and "ballshadow" images
+' Import the shadow materials file (3 sets included) (you can also export the 3 sets from this table to create the same file)
+' Copy in the BallShadowA flasher set and the sets of primitives named BallShadow#, RtxBallShadow#, and RtxBall2Shadow#
+'	* Count from 0 up, with at least as many objects each as there can be balls, including locked balls.  You'll get an "eval" warning if tnob is higher
+'	* Warning:  If merging with another system (JP's ballrolling), you may need to check tnob math and add an extra BallShadowA# flasher (out of range error)
+' Ensure you have a timer with a -1 interval that is always running
+' Set plastic ramps DB to *less* than the ambient shadows (-10000) if you want to see the pf shadow through the ramp
+
+' Create a collection called DynamicSources that includes all light sources you want to cast ball shadows
+' It's recommended that you be selective in which lights go in this collection, as there are limitations:
+' 1. The shadows can "pass through" solid objects and other light sources, so be mindful of where the lights would actually able to cast shadows
+' 2. If there are more than two equidistant sources, the shadows can suddenly switch on and off, so places like top and bottom lanes need attention
+' 3. At this time the shadows get the light on/off from tracking gilvl, so if you have lights you want shadows for that are on at different times you will need to either:
+'	a) remove this restriction (shadows think lights are always On)
+'	b) come up with a custom solution (see TZ example in script)
+' After confirming the shadows work in general, use ball control to move around and look for any weird behavior
+
+'****** End Part A:  Table Elements ******
+
+
+'****** Part B:  Code and Functions ******
+
+' *** Timer sub
+' The "DynamicBSUpdate" sub should be called by a timer with an interval of -1 (framerate)
+' Example timer sub:
+
+'Sub FrameTimer_Timer()
+'	If DynamicBallShadowsOn Or AmbientBallShadowOn Then DynamicBSUpdate 'update ball shadows
+'End Sub
+
+' *** These are usually defined elsewhere (ballrolling), but activate here if necessary
+'Const tnob = 10 ' total number of balls
+'Const lob = 0	'locked balls on start; might need some fiddling depending on how your locked balls are done
+'Dim tablewidth: tablewidth = Table1.width
+'Dim tableheight: tableheight = Table1.height
+
+' *** User Options - Uncomment here or move to top for easy access by players
+'----- Shadow Options -----
+'Const DynamicBallShadowsOn = 1		'0 = no dynamic ball shadow ("triangles" near slings and such), 1 = enable dynamic ball shadow
+'Const AmbientBallShadowOn = 1		'0 = Static shadow under ball ("flasher" image, like JP's)
+'									'1 = Moving ball shadow ("primitive" object, like ninuzzu's) - This is the only one that shows up on the pf when in ramps and fades when close to lights!
+'									'2 = flasher image shadow, but it moves like ninuzzu's
+
+' *** This segment goes within the RollingUpdate sub, so that if Ambient...=0 and Dynamic...=0 the entire DynamicBSUpdate sub can be skipped for max performance
+' *** Change gBOT to BOT if using existing getballs code
+' *** Includes lines commonly found there, for reference:
+'	' stop the sound of deleted balls
+'	For b = UBound(gBOT) + 1 to tnob
+'		If AmbientBallShadowOn = 0 Then BallShadowA(b).visible = 0
+'		...rolling(b) = False
+'		...StopSound("BallRoll_" & b)
+'	Next
+'
+' ...rolling and drop sounds...
+
+'		If DropCount(b) < 5 Then
+'			DropCount(b) = DropCount(b) + 1
+'		End If
+'
+'		' "Static" Ball Shadows
+'		If AmbientBallShadowOn = 0 Then
+'			If gBOT(b).Z > 30 Then
+'				BallShadowA(b).height=gBOT(b).z - BallSize/4		'This is technically 1/4 of the ball "above" the ramp, but it keeps it from clipping the ramp
+'			Else
+'				BallShadowA(b).height=gBOT(b).z - BallSize/2 + 5
+'			End If
+'			BallShadowA(b).Y = gBOT(b).Y + Ballsize/5 + offsetY
+'			BallShadowA(b).X = gBOT(b).X + offsetX
+'			BallShadowA(b).visible = 1
+'		End If
+
+' *** Required Functions, enable these if they are not already present elswhere in your table
+Function max(a,b)
+	if a > b then 
+		max = a
+	Else
+		max = b
+	end if
+end Function
+
+'Function Distance(ax,ay,bx,by)
+'	Distance = SQR((ax - bx)^2 + (ay - by)^2)
+'End Function
+
+'Dim PI: PI = 4*Atn(1)
+
+'Function Atn2(dy, dx)
+'	If dx > 0 Then
+'		Atn2 = Atn(dy / dx)
+'	ElseIf dx < 0 Then
+'		If dy = 0 Then 
+'			Atn2 = pi
+'		Else
+'			Atn2 = Sgn(dy) * (pi - Atn(Abs(dy / dx)))
+'		end if
+'	ElseIf dx = 0 Then
+'		if dy = 0 Then
+'			Atn2 = 0
+'		else
+'			Atn2 = Sgn(dy) * pi / 2
+'		end if
+'	End If
+'End Function
+
+'Function AnglePP(ax,ay,bx,by)
+'	AnglePP = Atn2((by - ay),(bx - ax))*180/PI
+'End Function
+
+'****** End Part B:  Code and Functions ******
+
+
+'****** Part C:  The Magic ******
+
+' *** These define the appearance of shadows in your table	***
+
+'Ambient (Room light source)
+Const AmbientBSFactor 		= 0.9	'0 to 1, higher is darker
+Const AmbientMovement		= 2		'1 to 4, higher means more movement as the ball moves left and right
+Const offsetX				= 0		'Offset x position under ball	(These are if you want to change where the "room" light is for calculating the shadow position,)
+Const offsetY				= 0		'Offset y position under ball	 (for example 5,5 if the light is in the back left corner)
+'Dynamic (Table light sources)
+Const DynamicBSFactor 		= 0.95	'0 to 1, higher is darker
+Const Wideness				= 20	'Sets how wide the dynamic ball shadows can get (20 +5 thinness is technically most accurate for lights at z ~25 hitting a 50 unit ball)
+Const Thinness				= 5		'Sets minimum as ball moves away from source
+
+' ***														***
+
+' *** Trim or extend these to *match* the number of balls/primitives/flashers on the table!
+dim objrtx1(11), objrtx2(11)
+dim objBallShadow(11)
+Dim BallShadowA
+BallShadowA = Array (BallShadowA0,BallShadowA1,BallShadowA2,BallShadowA3,BallShadowA4, BallShadowA5, BallShadowA6, BallShadowA7, BallShadowA8, BallShadowA9, BallShadowA10)
+Dim DSSources(30), numberofsources', DSGISide(30) 'Adapted for TZ with GI left / GI right
+
+'Initialization
+DynamicBSInit
+
+sub DynamicBSInit()
+	Dim iii, source
+
+	for iii = 0 to tnob - 1								'Prepares the shadow objects before play begins
+		Set objrtx1(iii) = Eval("RtxBallShadow" & iii)
+		objrtx1(iii).material = "RtxBallShadow" & iii
+		objrtx1(iii).z = 1 + iii/1000 + 0.01			'Separate z for layering without clipping
+		objrtx1(iii).visible = 0
+
+		Set objrtx2(iii) = Eval("RtxBall2Shadow" & iii)
+		objrtx2(iii).material = "RtxBallShadow2_" & iii
+		objrtx2(iii).z = 1 + iii/1000 + 0.02
+		objrtx2(iii).visible = 0
+
+		Set objBallShadow(iii) = Eval("BallShadow" & iii)
+		objBallShadow(iii).material = "BallShadow" & iii
+		UpdateMaterial objBallShadow(iii).material,1,0,0,0,0,0,AmbientBSFactor,RGB(0,0,0),0,0,False,True,0,0,0,0
+		objBallShadow(iii).Z = 1 + iii/1000 + 0.04
+		objBallShadow(iii).visible = 0
+
+		BallShadowA(iii).Opacity = 100*AmbientBSFactor
+		BallShadowA(iii).visible = 0
+	Next
+
+	iii = 0
+
+	For Each Source in DynamicSources
+		DSSources(iii) = Array(Source.x, Source.y)
+'		If Instr(Source.name , "Left") > 0 Then DSGISide(iii) = 0 Else DSGISide(iii) = 1	'Adapted for TZ with GI left / GI right
+		iii = iii + 1
+	Next
+	numberofsources = iii
+end sub
+
+Sub DynamicBSUpdate
+	Dim falloff: falloff = 150 'Max distance to light sources, can be changed dynamically if you have a reason
+	Dim ShadowOpacity1, ShadowOpacity2 
+	Dim s, LSd, iii
+	Dim dist1, dist2, src1, src2
+	Dim gBOT: gBOT=getballs	'Uncomment if you're deleting balls - Don't do it! #SaveTheBalls
+
+	'Hide shadow of deleted balls
+	For s = UBound(gBOT) + 1 to tnob - 1
+		objrtx1(s).visible = 0
+		objrtx2(s).visible = 0
+		objBallShadow(s).visible = 0
+		BallShadowA(s).visible = 0
+	Next
+
+	If UBound(gBOT) < lob Then Exit Sub		'No balls in play, exit
+
+'The Magic happens now
+	For s = lob to UBound(gBOT)
+
+' *** Normal "ambient light" ball shadow
+	'Layered from top to bottom. If you had an upper pf at for example 80 units and ramps even above that, your segments would be z>110; z<=110 And z>100; z<=100 And z>30; z<=30 And z>20; Else invisible
+
+		If AmbientBallShadowOn = 1 Then			'Primitive shadow on playfield, flasher shadow in ramps
+			If gBOT(s).Z > 30 Then							'The flasher follows the ball up ramps while the primitive is on the pf
+				If gBOT(s).X < tablewidth/2 Then
+					objBallShadow(s).X = ((gBOT(s).X) - (Ballsize/10) + ((gBOT(s).X - (tablewidth/2))/(Ballsize/AmbientMovement))) + offsetX + 5
+				Else
+					objBallShadow(s).X = ((gBOT(s).X) + (Ballsize/10) + ((gBOT(s).X - (tablewidth/2))/(Ballsize/AmbientMovement))) + offsetX - 5
+				End If
+				objBallShadow(s).Y = gBOT(s).Y + BallSize/10 + offsetY
+				objBallShadow(s).visible = 1
+
+				BallShadowA(s).X = gBOT(s).X + offsetX
+				BallShadowA(s).Y = gBOT(s).Y + BallSize/5
+				BallShadowA(s).height=gBOT(s).z - BallSize/4		'This is technically 1/4 of the ball "above" the ramp, but it keeps it from clipping the ramp
+				BallShadowA(s).visible = 1
+			Elseif gBOT(s).Z <= 30 And gBOT(s).Z > 20 Then	'On pf, primitive only
+				objBallShadow(s).visible = 1
+				If gBOT(s).X < tablewidth/2 Then
+					objBallShadow(s).X = ((gBOT(s).X) - (Ballsize/10) + ((gBOT(s).X - (tablewidth/2))/(Ballsize/AmbientMovement))) + offsetX + 5
+				Else
+					objBallShadow(s).X = ((gBOT(s).X) + (Ballsize/10) + ((gBOT(s).X - (tablewidth/2))/(Ballsize/AmbientMovement))) + offsetX - 5
+				End If
+				objBallShadow(s).Y = gBOT(s).Y + offsetY
+'				objBallShadow(s).Z = gBOT(s).Z + s/1000 + 0.04		'Uncomment (and adjust If/Elseif height logic) if you want the primitive shadow on an upper/split pf
+				BallShadowA(s).visible = 0
+			Else											'Under pf, no shadows
+				objBallShadow(s).visible = 0
+				BallShadowA(s).visible = 0
+			end if
+
+		Elseif AmbientBallShadowOn = 2 Then		'Flasher shadow everywhere
+			If gBOT(s).Z > 30 Then							'In a ramp
+				BallShadowA(s).X = gBOT(s).X + offsetX
+				BallShadowA(s).Y = gBOT(s).Y + BallSize/5
+				BallShadowA(s).height=gBOT(s).z - BallSize/4		'This is technically 1/4 of the ball "above" the ramp, but it keeps it from clipping the ramp
+				BallShadowA(s).visible = 1
+			Elseif gBOT(s).Z <= 30 And gBOT(s).Z > 20 Then	'On pf
+				BallShadowA(s).visible = 1
+				If gBOT(s).X < tablewidth/2 Then
+					BallShadowA(s).X = ((gBOT(s).X) - (Ballsize/10) + ((gBOT(s).X - (tablewidth/2))/(Ballsize/AmbientMovement))) + offsetX + 5
+				Else
+					BallShadowA(s).X = ((gBOT(s).X) + (Ballsize/10) + ((gBOT(s).X - (tablewidth/2))/(Ballsize/AmbientMovement))) + offsetX - 5
+				End If
+				BallShadowA(s).Y = gBOT(s).Y + Ballsize/10 + offsetY
+				BallShadowA(s).height=gBOT(s).z - BallSize/2 + 5
+			Else											'Under pf
+				BallShadowA(s).visible = 0
+			End If
+		End If
+
+' *** Dynamic shadows
+		If DynamicBallShadowsOn Then
+			If gBOT(s).Z < 30 And gBOT(s).X < 850 Then	'Parameters for where the shadows can show, here they are not visible above the table (no upper pf) or in the plunger lane
+				dist1 = falloff:
+				dist2 = falloff
+				For iii = 0 to numberofsources - 1 ' Search the 2 nearest influencing lights
+					LSd = Distance(gBOT(s).x, gBOT(s).y, DSSources(iii)(0), DSSources(iii)(1)) 'Calculating the Linear distance to the Source
+					If LSd < falloff And gilvl > 0 Then
+'					If LSd < dist2 And ((DSGISide(iii) = 0 And Lampz.State(100)>0) Or (DSGISide(iii) = 1 And Lampz.State(104)>0)) Then	'Adapted for TZ with GI left / GI right
+						dist2 = dist1
+						dist1 = LSd
+						src2 = src1
+						src1 = iii
+					End If
+				Next
+				ShadowOpacity1 = 0
+				If dist1 < falloff Then
+					objrtx1(s).visible = 1 : objrtx1(s).X = gBOT(s).X : objrtx1(s).Y = gBOT(s).Y
+					'objrtx1(s).Z = gBOT(s).Z - 25 + s/1000 + 0.01 'Uncomment if you want to add shadows to an upper/lower pf
+					objrtx1(s).rotz = AnglePP(DSSources(src1)(0), DSSources(src1)(1), gBOT(s).X, gBOT(s).Y) + 90
+					ShadowOpacity1 = 1 - dist1 / falloff
+					objrtx1(s).size_y = Wideness * ShadowOpacity1 + Thinness
+					UpdateMaterial objrtx1(s).material,1,0,0,0,0,0,ShadowOpacity1*DynamicBSFactor^3,RGB(0,0,0),0,0,False,True,0,0,0,0
+				Else
+					objrtx1(s).visible = 0
+				End If
+				ShadowOpacity2 = 0
+				If dist2 < falloff Then
+					objrtx2(s).visible = 1 : objrtx2(s).X = gBOT(s).X : objrtx2(s).Y = gBOT(s).Y + offsetY
+					'objrtx2(s).Z = gBOT(s).Z - 25 + s/1000 + 0.02 'Uncomment if you want to add shadows to an upper/lower pf
+					objrtx2(s).rotz = AnglePP(DSSources(src2)(0), DSSources(src2)(1), gBOT(s).X, gBOT(s).Y) + 90
+					ShadowOpacity2 = 1 - dist2 / falloff
+					objrtx2(s).size_y = Wideness * ShadowOpacity2 + Thinness
+					UpdateMaterial objrtx2(s).material,1,0,0,0,0,0,ShadowOpacity2*DynamicBSFactor^3,RGB(0,0,0),0,0,False,True,0,0,0,0
+				Else
+					objrtx2(s).visible = 0
+				End If
+				If AmbientBallShadowOn = 1 Then
+					'Fades the ambient shadow (primitive only) when it's close to a light
+					UpdateMaterial objBallShadow(s).material,1,0,0,0,0,0,AmbientBSFactor*(1 - max(ShadowOpacity1, ShadowOpacity2)),RGB(0,0,0),0,0,False,True,0,0,0,0
+				Else
+					BallShadowA(s).Opacity = 100 * AmbientBSFactor * (1 - max(ShadowOpacity1, ShadowOpacity2))
+				End If
+			Else 'Hide dynamic shadows everywhere else, just in case
+				objrtx2(s).visible = 0 : objrtx1(s).visible = 0
+			End If
+		End If
+	Next
+End Sub
+'****************************************************************
+'****  END VPW DYNAMIC BALL SHADOWS by Iakki, Apophis, and Wylte
+'****************************************************************
+
+
+'******************************************************
 ' VPW TargetBouncer for targets and posts by Iaakki, Wrd1972, Apophis
 '******************************************************
 
@@ -17617,7 +18075,7 @@ End Sub
 '****  FLIPPER CORRECTIONS by nFozzy
 '******************************************************
 '
-' There are several steps for taking advantage of nFozzy's flipper solution.  At a high level well need the following:
+' There are several steps for taking advantage of nFozzy's flipper solution.  At a high level we'll need the following:
 '	1. flippers with specific physics settings
 '	2. custom triggers for each flipper (TriggerLF, TriggerRF)
 '	3. an object or point to tell the script where the tip of the flipper is at rest (EndPointLp, EndPointRp)
@@ -17650,6 +18108,8 @@ End Sub
 
 dim LF : Set LF = New FlipperPolarity
 dim RF : Set RF = New FlipperPolarity
+
+dim RFU : Set RFU = New FlipperPolarity
 
 InitPolarity
 
@@ -17783,42 +18243,45 @@ InitPolarity
 '' Early 90's and after
 '
 Sub InitPolarity()
-        dim x, a : a = Array(LF, RF)
-        for each x in a
-                x.AddPoint "Ycoef", 0, RightFlipper.Y-65, 1        'disabled
-                x.AddPoint "Ycoef", 1, RightFlipper.Y-11, 1
-                x.enabled = True
-                x.TimeDelay = 60
-        Next
+	dim x, a : a = Array(LF, RF, RFU)
+	for each x in a
+		x.AddPoint "Ycoef", 0, RightFlipper.Y-65, 1        'disabled
+		x.AddPoint "Ycoef", 1, RightFlipper.Y-11, 1
+		x.enabled = True
+		x.TimeDelay = 60
+	Next
 
-        AddPt "Polarity", 0, 0, 0
-        AddPt "Polarity", 1, 0.05, -5.5
-        AddPt "Polarity", 2, 0.4, -5.5
-        AddPt "Polarity", 3, 0.6, -5.0
-        AddPt "Polarity", 4, 0.65, -4.5
-        AddPt "Polarity", 5, 0.7, -4.0
-        AddPt "Polarity", 6, 0.75, -3.5
-        AddPt "Polarity", 7, 0.8, -3.0
-        AddPt "Polarity", 8, 0.85, -2.5
-        AddPt "Polarity", 9, 0.9,-2.0
-        AddPt "Polarity", 10, 0.95, -1.5
-        AddPt "Polarity", 11, 1, -1.0
-        AddPt "Polarity", 12, 1.05, -0.5
-        AddPt "Polarity", 13, 1.1, 0
-        AddPt "Polarity", 14, 1.3, 0
+	AddPt "Polarity", 0, 0, 0
+	AddPt "Polarity", 1, 0.05, -5.5
+	AddPt "Polarity", 2, 0.4, -5.5
+	AddPt "Polarity", 3, 0.6, -5.0
+	AddPt "Polarity", 4, 0.65, -4.5
+	AddPt "Polarity", 5, 0.7, -4.0
+	AddPt "Polarity", 6, 0.75, -3.5
+	AddPt "Polarity", 7, 0.8, -3.0
+	AddPt "Polarity", 8, 0.85, -2.5
+	AddPt "Polarity", 9, 0.9,-2.0
+	AddPt "Polarity", 10, 0.95, -1.5
+	AddPt "Polarity", 11, 1, -1.0
+	AddPt "Polarity", 12, 1.05, -0.5
+	AddPt "Polarity", 13, 1.1, 0
+	AddPt "Polarity", 14, 1.3, 0
 
-        addpt "Velocity", 0, 0,         1
-        addpt "Velocity", 1, 0.16, 1.06
-        addpt "Velocity", 2, 0.41,         1.05
-        addpt "Velocity", 3, 0.53,         1'0.982
-        addpt "Velocity", 4, 0.702, 0.968
-        addpt "Velocity", 5, 0.95,  0.968
-        addpt "Velocity", 6, 1.03,         0.945
+	addpt "Velocity", 0, 0,         1
+	addpt "Velocity", 1, 0.16, 1.06
+	addpt "Velocity", 2, 0.41,         1.05
+	addpt "Velocity", 3, 0.53,         1'0.982
+	addpt "Velocity", 4, 0.702, 0.968
+	addpt "Velocity", 5, 0.95,  0.968
+	addpt "Velocity", 6, 1.03,         0.945
 
-        LF.Object = LeftFlipper        
-        LF.EndPoint = EndPointLp
-        RF.Object = RightFlipper
-        RF.EndPoint = EndPointRp
+	LF.Object = LeftFlipper        
+	LF.EndPoint = EndPointLp
+	RF.Object = RightFlipper
+	RF.EndPoint = EndPointRp
+
+	RFU.Object = UPRightFlipper
+	RFU.EndPoint = EndPointRpU
 End Sub
 
 
@@ -17828,7 +18291,9 @@ Sub TriggerLF_UnHit() : LF.PolarityCorrect activeball : End Sub
 Sub TriggerRF_Hit() : RF.Addball activeball : End Sub
 Sub TriggerRF_UnHit() : RF.PolarityCorrect activeball : End Sub
 
-
+' Upper right flipper
+Sub TriggerRFU_Hit() : RFU.Addball activeball : End Sub
+Sub TriggerRFU_UnHit() : RFU.PolarityCorrect activeball : End Sub
 
 
 '******************************************************
@@ -18607,7 +19072,7 @@ Sub RollingUpdate()
 	' stop the sound of deleted balls
 	For b = UBound(gBOT) + 1 to tnob - 1
 		' Comment the next line if you are not implementing Dyanmic Ball Shadows
-		'If AmbientBallShadowOn = 0 Then BallShadowA(b).visible = 0
+		If AmbientBallShadowOn = 0 Then BallShadowA(b).visible = 0
 		rolling(b) = False
 		StopSound("BallRoll_" & b)
 	Next
@@ -18647,16 +19112,16 @@ Sub RollingUpdate()
 		' "Static" Ball Shadows
 		' Comment the next If block, if you are not implementing the Dyanmic Ball Shadows
 
-'		If AmbientBallShadowOn = 0 Then
-'			If gBOT(b).Z > 30 Then
-'				BallShadowA(b).height=gBOT(b).z - BallSize/4		'This is technically 1/4 of the ball "above" the ramp, but it keeps it from clipping the ramp
-'			Else
-'				BallShadowA(b).height=gBOT(b).z - BallSize/2 + 5
-'			End If
-'			BallShadowA(b).Y = gBOT(b).Y + Ballsize/5 + offsetY
-'			BallShadowA(b).X = gBOT(b).X + offsetX
-'			BallShadowA(b).visible = 1
-'		End If
+		If AmbientBallShadowOn = 0 Then
+			If gBOT(b).Z > 30 Then
+				BallShadowA(b).height=gBOT(b).z - BallSize/4		'This is technically 1/4 of the ball "above" the ramp, but it keeps it from clipping the ramp
+			Else
+				BallShadowA(b).height=gBOT(b).z - BallSize/2 + 5
+			End If
+			BallShadowA(b).Y = gBOT(b).Y + Ballsize/5 + offsetY
+			BallShadowA(b).X = gBOT(b).X + offsetX
+			BallShadowA(b).visible = 1
+		End If
 	Next
 End Sub
 
@@ -18701,6 +19166,7 @@ RampBalls(0,0) = False
 dim RampType(6)	
 
 Sub WireRampOn(input)  : Waddball ActiveBall, input : RampRollUpdate: End Sub
+Sub WireRampOn2(input, ball)  : Waddball ball, input : RampRollUpdate: End Sub
 Sub WireRampOff() : WRemoveBall ActiveBall.ID	: End Sub
 
 
@@ -19554,4 +20020,16 @@ End Sub
 
 Sub EndWireRampTrigger_Hit()
 	WireRampOff
+End Sub
+
+Sub LockRampEntanceTrigger_Hit()
+	WireRampOn True
+End Sub
+
+Sub TopTurnTrigger_Hit()
+	WireRampOn True
+End Sub
+
+Sub FrameTimer_Timer()
+	If DynamicBallShadowsOn Or AmbientBallShadowOn Then DynamicBSUpdate 'update ball shadows	
 End Sub
