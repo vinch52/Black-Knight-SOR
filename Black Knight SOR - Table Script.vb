@@ -2316,7 +2316,7 @@ Sub Video_Display_Match_Timer()
 '	pupevent 575
 	ScorePercent(CurrentPlayer) = int(Score(CurrentPlayer) /100)
 	ScoreCent(CurrentPlayer) = Score(CurrentPlayer) - (ScorePercent(CurrentPlayer) * 100)
-	MatchRandom = RndNum(0,9) * 10
+	MatchRandom = RndNum2(0,9) * 10
 	DisplayMatchRandom.Interval=5200
 	DisplayMatchRandom.Enabled = True
 End Sub
@@ -19537,6 +19537,9 @@ Function RndNum(min, max)
 	RndNum = Rnd() * (max-min) + min' Sets a random number between min and max
 End Function
 
+Function RndNum2(min,max)					' Used for Matching Random Score
+	RndNum2 = Int(Rnd()*(max-min+1))+min     ' Sets a random number between min AND max
+End Function
 '/////////////////////////////  GENERAL SOUND SUBROUTINES  ////////////////////////////
 Sub SoundStartButton()
 	PlaySound ("Start_Button"), 0, StartButtonSoundLevel, 0, 0.25
